@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>浙江初中打卡刷题 - 专业版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        /* 顶部导航 */
+        .nav {
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            padding: 15px 25px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #4A90D9;
+        }
+        .nav-menu {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            background: #F5F7FA;
+            color: #666;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        .nav-btn:hover { background: #E8F4FD; color: #4A90D9; }
+        .nav-btn.active { background: #4A90D9; color: white; }
+        
+        /* 卡片样式 */
+        .card { 
+            background: rgba(255,255,255,0.95); 
+            border-radius: 20px; 
+            padding: 25px; 
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        .card h2 { 
+            font-size: 20px; 
+            margin-bottom: 20px; 
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* 按钮 */
+        .btn { 
+            background: linear-gradient(135deg, #4A90D9, #357ABD);
+            color: white; 
+            border: none; 
+            padding: 16px 30px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(74,144,217,0.3);
+            width: 100%;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(74,144,217,0.5); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        /* 选择卡片 */
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .selection-card {
+            padding: 20px;
+            border: 2px solid #E8E8E8;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .selection-card:hover { 
+            border-color: #4A90D9; 
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74,144,217,0.2);
+        }
+        .selection-card.selected { 
+            background: linear-gradient(135deg, #E8F4FD, #F0F7FF); 
+            border-color: #4A90D9;
+            box-shadow: 0 5px 20px rgba(74,144,217,0.3);
+        }
+        .selection-card .icon { font-size: 36px; margin-bottom: 8px; }
+        .selection-card .label { font-size: 15px; font-weight: 600; color: #333; }
+        
+        /* 题目卡片 */
+        .question-card {
+            background: linear-gradient(135deg, #F5F7FA, #FFFFFF);
+            padding: 20px;
+            border-radius: 14px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4A90D9;
+        }
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .question-subject {
+            background: linear-gradient(135deg, #4A90D9, #357ABD);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .question-topic {
+            color: #666;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .option {
+            background: white;
+            padding: 15px 18px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border: 2px solid #E8E8E8;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .option:hover { 
+            border-color: #4A90D9; 
+            background: #F0F7FF;
+            transform: translateX(5px);
+        }
+        .option-letter {
+            width: 28px;
+            height: 28px;
+            background: #F5F7FA;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #666;
+            font-size: 14px;
+        }
+        .option.correct { 
+            background: linear-gradient(135deg, #E8F8F0, #F0FFF4); 
+            border-color: #52C41A;
+        }
+        .option.correct .option-letter { background: #52C41A; color: white; }
+        .option.wrong { 
+            background: linear-gradient(135deg, #FFF1F0, #FFF5F5); 
+            border-color: #F5222D;
+        }
+        .option.wrong .option-letter { background: #F5222D; color: white; }
+        
+        /* 解析 */
+        .analysis {
+            background: linear-gradient(135deg, #E8F8F0, #F0FFF4);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #52C41A;
+            margin-top: 15px;
+            animation: slideIn 0.3s ease;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .analysis.wrong {
+            background: linear-gradient(135deg, #FFF1F0, #FFF5F5);
+            border-left-color: #F5222D;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 进度条 */
+        .progress-bar {
+            height: 8px;
+            background: #E8E8E8;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4A90D9, #357ABD);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #4A90D9, #357ABD);
+            color: white;
+            padding: 20px;
+            border-radius: 14px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(74,144,217,0.3);
+        }
+        .stat-value { font-size: 36px; font-weight: bold; margin-bottom: 5px; }
+        .stat-label { font-size: 13px; opacity: 0.9; }
+        
+        /* 功能按钮 */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .action-btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            background: #F5F7FA;
+            color: #666;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .action-btn:hover { background: #E8F4FD; color: #4A90D9; }
+        .action-btn.bookmarked { background: #FEF3C7; color: #D97706; }
+        
+        /* 列表 */
+        .item-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .list-item {
+            padding: 15px;
+            background: #F5F7FA;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .list-item:hover { 
+            background: #E8F4FD; 
+            transform: translateX(5px);
+        }
+        .list-item-info { flex: 1; }
+        .list-item-subject { 
+            font-size: 11px; 
+            color: #666; 
+            margin-bottom: 4px;
+        }
+        .list-item-question { 
+            font-size: 14px; 
+            font-weight: 600; 
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .list-item-date { 
+            font-size: 11px; 
+            color: #999;
+        }
+        .list-item-action {
+            display: flex;
+            gap: 6px;
+        }
+        
+        /* 标签 */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .badge-success { background: #E8F8F0; color: #52C41A; }
+        .badge-error { background: #FFF1F0; color: #F5222D; }
+        .badge-warning { background: #FEF3C7; color: #D97706; }
+        .badge-info { background: #E8F4FD; color: #4A90D9; }
+        
+        /* 信息框 */
+        .info-box {
+            padding: 15px;
+            background: linear-gradient(135deg, #E8F4FD, #F0F7FF);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .info-box p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        /* 隐藏 */
+        .hidden { display: none; }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .nav { flex-direction: column; align-items: stretch; }
+            .nav-menu { justify-content: center; }
+            .selection-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .question-header { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航 -->
+        <div class="nav">
+            <div class="nav-logo">
+                <span>📚</span>
+                <span>浙江初中打卡刷题</span>
+            </div>
+            <div class="nav-menu">
+                <button class="nav-btn active" onclick="showPage('home')">🏠 首页</button>
+                <button class="nav-btn" onclick="showPage('wrong')">❌ 错题本</button>
+                <button class="nav-btn" onclick="showPage('history')">📅 历史记录</button>
+                <button class="nav-btn" onclick="showPage('bookmark')">⭐ 收藏夹</button>
+            </div>
+        </div>
+        
+        <!-- 首页 -->
+        <div id="home-page" class="page">
+            <div class="card">
+                <h2>📌 选择年级</h2>
+                <div class="selection-grid">
+                    <div class="selection-card selected" onclick="selectGrade('7', this)">
+                        <div class="icon">7️⃣</div>
+                        <div class="label">七年级</div>
+                    </div>
+                    <div class="selection-card" onclick="selectGrade('8', this)">
+                        <div class="icon">8️⃣</div>
+                        <div class="label">八年级</div>
+                    </div>
+                    <div class="selection-card" onclick="selectGrade('9', this)">
+                        <div class="icon">9️⃣</div>
+                        <div class="label">九年级</div>
+                    </div>
+                </div>
+
+                <h2>📖 选择学期</h2>
+                <div class="selection-grid">
+                    <div class="selection-card" onclick="selectSemester('1', this)">
+                        <div class="icon">📖</div>
+                        <div class="label">上册</div>
+                    </div>
+                    <div class="selection-card selected" onclick="selectSemester('2', this)">
+                        <div class="icon">📗</div>
+                        <div class="label">下册</div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 14px; font-weight: 600; color: #4A90D9;">📊 当前题库</span>
+                        <span class="badge badge-success">250 题</span>
+                    </div>
+                    <p>包含：语文 100 题 + 数学 150 题</p>
+                    <p>每次答题：随机 25 题</p>
+                    <p>智能防重复：5 天内不重复</p>
+                </div>
+
+                <button class="btn" onclick="startCheckin()" id="start-btn">
+                    🚀 开始每日打卡（25 题）
+                </button>
+            </div>
+        </div>
+        
+        <!-- 答题页 -->
+        <div id="answer-page" class="page hidden">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span id="progress-text" style="font-size: 15px; font-weight: 600; color: #666;">第 1 / 25 题</span>
+                    <span id="score-text" style="font-size: 15px; font-weight: 600; color: #4A90D9;">得分：0</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <div id="question-container"></div>
+            </div>
+        </div>
+        
+        <!-- 结果页 -->
+        <div id="result-page" class="page hidden">
+            <div class="card">
+                <h2>🎉 打卡完成！</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div id="final-score" class="stat-value">0</div>
+                        <div class="stat-label">得分</div>
+                    </div>
+                    <div class="stat-card">
+                        <div id="final-percentage" class="stat-value">0%</div>
+                        <div class="stat-label">正确率</div>
+                    </div>
+                    <div class="stat-card">
+                        <div id="total-questions" class="stat-value">25</div>
+                        <div class="stat-label">总题数</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn" onclick="location.reload()" style="flex: 1; min-width: 150px;">🔄 再来一次</button>
+                    <button class="btn btn-warning" onclick="reviewWrongAnswers()" style="flex: 1; min-width: 150px;">📖 复习错题</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 错题本 -->
+        <div id="wrong-page" class="page hidden">
+            <div class="card">
+                <h2>❌ 错题本</h2>
+                <div id="wrong-list" class="item-list">
+                    <p style="text-align: center; color: #999; padding: 40px;">暂无错题，继续加油！💪</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 历史记录 -->
+        <div id="history-page" class="page hidden">
+            <div class="card">
+                <h2>📅 打卡历史</h2>
+                <div id="history-list" class="item-list">
+                    <p style="text-align: center; color: #999; padding: 40px;">暂无打卡记录</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 收藏夹 -->
+        <div id="bookmark-page" class="page hidden">
+            <div class="card">
+                <h2>⭐ 收藏夹</h2>
+                <div id="bookmark-list" class="item-list">
+                    <p style="text-align: center; color: #999; padding: 40px;">暂无收藏题目</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 题库数据（250 题）
+        const questions = [
+            // 语文 - 100 题
+            { id: 'cn_001', subject: '语文', topic: '《邓稼先》', question: '《邓稼先》一文的作者是？', options: ['A. 杨振宁', 'B. 邓稼先', 'C. 钱学森', 'D. 郭永怀'], answer: 'A', analysis: '《邓稼先》是杨振宁为纪念好友邓稼先而写的回忆性散文。' },
+            { id: 'cn_002', subject: '语文', topic: '《邓稼先》', question: '邓稼先被誉为？', options: ['A. 中国航天之父', 'B. 两弹元勋', 'C. 氢弹之父', 'D. 导弹之父'], answer: 'B', analysis: '邓稼先是中国核武器研制工作的开拓者和奠基者，被誉为"两弹元勋"。' },
+            { id: 'cn_003', subject: '语文', topic: '《说和做》', question: '《说和做》一文主要描写的人物是？', options: ['A. 鲁迅', 'B. 闻一多', 'C. 朱自清', 'D. 老舍'], answer: 'B', analysis: '《说和做》是臧克家写的回忆闻一多先生的文章。' },
+            { id: 'cn_004', subject: '语文', topic: '《回忆鲁迅先生》', question: '《回忆鲁迅先生》的作者是？', options: ['A. 萧红', 'B. 张爱玲', 'C. 冰心', 'D. 丁玲'], answer: 'A', analysis: '萧红的《回忆鲁迅先生》通过日常生活的细节，展现了鲁迅先生平凡而伟大的一面。' },
+            { id: 'cn_005', subject: '语文', topic: '《孙权劝学》', question: '《孙权劝学》选自？', options: ['A. 《史记》', 'B. 《资治通鉴》', 'C. 《汉书》', 'D. 《后汉书》'], answer: 'B', analysis: '《孙权劝学》选自《资治通鉴》。' },
+            { id: 'cn_006', subject: '语文', topic: '《孙权劝学》', question: '"士别三日，即更刮目相待"的意思是？', options: ['A. 分别三天后要重新看待', 'B. 读书人分别三天，就应该用新的眼光看待', 'C. 三天不见要刮眼睛', 'D. 分别很久后要仔细看'], answer: 'B', analysis: '比喻人经过学习后会有很大进步。' },
+            { id: 'cn_007', subject: '语文', topic: '《黄河颂》', question: '《黄河颂》是一首？', options: ['A. 叙事诗', 'B. 抒情诗', 'C. 哲理诗', 'D. 讽刺诗'], answer: 'B', analysis: '《黄河颂》是光未然创作的抒情诗。' },
+            { id: 'cn_008', subject: '语文', topic: '《木兰诗》', question: '《木兰诗》是一首？', options: ['A. 五言绝句', 'B. 七言律诗', 'C. 北朝民歌', 'D. 唐诗'], answer: 'C', analysis: '《木兰诗》是北朝民歌。' },
+            { id: 'cn_009', subject: '语文', topic: '《木兰诗》', question: '"万里赴戎机，关山度若飞"的下一句是？', options: ['A. 朔气传金柝，寒光照铁衣', 'B. 将军百战死，壮士十年归', 'C. 归来见天子，天子坐明堂', 'D. 策勋十二转，赏赐百千强'], answer: 'A', analysis: '描写了木兰征战的艰苦生活。' },
+            { id: 'cn_010', subject: '语文', topic: '《陋室铭》', question: '《陋室铭》的作者是？', options: ['A. 李白', 'B. 杜甫', 'C. 刘禹锡', 'D. 白居易'], answer: 'C', analysis: '《陋室铭》是唐代诗人刘禹锡的作品。' },
+            { id: 'cn_011', subject: '语文', topic: '《爱莲说》', question: '"出淤泥而不染"描写的是？', options: ['A. 梅花', 'B. 菊花', 'C. 莲花', 'D. 牡丹'], answer: 'C', analysis: '比喻君子不与世俗同流合污。' },
+            { id: 'cn_012', subject: '语文', topic: '《爱莲说》', question: '《爱莲说》中，作者把莲花比作？', options: ['A. 隐逸者', 'B. 富贵者', 'C. 君子', 'D. 英雄'], answer: 'C', analysis: '"莲，花之君子者也。"' },
+            { id: 'cn_013', subject: '语文', topic: '《望岳》', question: '《望岳》描写的是哪座山？', options: ['A. 华山', 'B. 泰山', 'C. 嵩山', 'D. 衡山'], answer: 'B', analysis: '"会当凌绝顶，一览众山小"。' },
+            { id: 'cn_014', subject: '语文', topic: '《登飞来峰》', question: '"不畏浮云遮望眼"的下一句是？', options: ['A. 只缘身在最高层', 'B. 自缘身在最高层', 'C. 只因身在最高层', 'D. 只缘身在此山中'], answer: 'B', analysis: '表达了诗人高瞻远瞩的胸怀。' },
+            { id: 'cn_015', subject: '语文', topic: '《游山西村》', question: '"山重水复疑无路"的下一句是？', options: ['A. 柳暗花明又一村', 'B. 柳暗花明又一春', 'C. 柳暗花明又一景', 'D. 柳暗花明又一处'], answer: 'A', analysis: '比喻在困境中出现转机。' },
+            { id: 'cn_016', subject: '语文', topic: '《己亥杂诗》', question: '"落红不是无情物"的下一句是？', options: ['A. 化作春泥更护花', 'B. 化作春泥保护花', 'C. 化作泥土更护花', 'D. 化为春泥更护花'], answer: 'A', analysis: '表达了诗人对理想的执着追求。' },
+            { id: 'cn_017', subject: '语文', topic: '《阿长与<山海经>》', question: '《阿长与<山海经>》选自？', options: ['A. 《呐喊》', 'B. 《彷徨》', 'C. 《朝花夕拾》', 'D. 《野草》'], answer: 'C', analysis: '选自鲁迅的散文集《朝花夕拾》。' },
+            { id: 'cn_018', subject: '语文', topic: '《老王》', question: '《老王》的作者是？', options: ['A. 杨绛', 'B. 钱钟书', 'C. 冰心', 'D. 巴金'], answer: 'A', analysis: '表达了对底层劳动者的同情。' },
+            { id: 'cn_019', subject: '语文', topic: '《卖油翁》', question: '《卖油翁》的作者是？', options: ['A. 苏轼', 'B. 欧阳修', 'C. 王安石', 'D. 曾巩'], answer: 'B', analysis: '说明了"熟能生巧"的道理。' },
+            { id: 'cn_020', subject: '语文', topic: '《卖油翁》', question: '"无他，但手熟尔"的意思是？', options: ['A. 没有别的，只是手熟练罢了', 'B. 没有其他人，只有手熟练', 'C. 没有办法，只能手熟练', 'D. 没有他，手就熟练了'], answer: 'A', analysis: '说明了熟能生巧的道理。' },
+            // 语文 21-100 题（简化示例，实际应完整填写）
+            ...Array.from({ length: 80 }, (_, i) => ({
+                id: `cn_${String(i + 21).padStart(3, '0')}`,
+                subject: '语文',
+                topic: '七年级下册',
+                question: `语文题目 ${i + 21}：下列词语中书写正确的是？`,
+                options: [`A. 选项${i + 21}A`, `B. 选项${i + 21}B`, `C. 选项${i + 21}C`, `D. 选项${i + 21}D`],
+                answer: 'A',
+                analysis: `这是语文题目${i + 21}的解析。`
+            })),
+            
+            // 数学 - 150 题
+            { id: 'ma_001', subject: '数学', topic: '相交线', question: '两条直线相交，最多有几个交点？', options: ['A. 0 个', 'B. 1 个', 'C. 2 个', 'D. 无数个'], answer: 'B', analysis: '两条直线相交，最多有 1 个交点。' },
+            { id: 'ma_002', subject: '数学', topic: '对顶角', question: '对顶角的性质是？', options: ['A. 互补', 'B. 互余', 'C. 相等', 'D. 不确定'], answer: 'C', analysis: '对顶角相等。' },
+            { id: 'ma_003', subject: '数学', topic: '邻补角', question: '邻补角的和是？', options: ['A. 90°', 'B. 180°', 'C. 270°', 'D. 360°'], answer: 'B', analysis: '邻补角的和是 180°。' },
+            { id: 'ma_004', subject: '数学', topic: '垂线', question: '过直线外一点，有几条直线与已知直线垂直？', options: ['A. 0 条', 'B. 1 条', 'C. 2 条', 'D. 无数条'], answer: 'B', analysis: '有且只有 1 条。' },
+            { id: 'ma_005', subject: '数学', topic: '点到直线的距离', question: '点到直线的距离是指？', options: ['A. 点到直线上任意一点的距离', 'B. 点到直线的垂线段的长度', 'C. 点到直线的斜线段的长度', 'D. 点到直线的水平距离'], answer: 'B', analysis: '垂线段的长度最短。' },
+            { id: 'ma_006', subject: '数学', topic: '平行线的判定', question: '下列条件中，不能判定两直线平行的是？', options: ['A. 同位角相等', 'B. 内错角相等', 'C. 同旁内角互补', 'D. 对顶角相等'], answer: 'D', analysis: '对顶角相等不能判定平行。' },
+            { id: 'ma_007', subject: '数学', topic: '平行线的性质', question: '两直线平行，同位角？', options: ['A. 互补', 'B. 互余', 'C. 相等', 'D. 不确定'], answer: 'C', analysis: '两直线平行，同位角相等。' },
+            { id: 'ma_008', subject: '数学', topic: '平方根', question: '4 的算术平方根是？', options: ['A. 2', 'B. -2', 'C. ±2', 'D. 16'], answer: 'A', analysis: '算术平方根只取正值。' },
+            { id: 'ma_009', subject: '数学', topic: '立方根', question: '-8 的立方根是？', options: ['A. 2', 'B. -2', 'C. ±2', 'D. 4'], answer: 'B', analysis: '(-2)³ = -8。' },
+            { id: 'ma_010', subject: '数学', topic: '无理数', question: '下列数中，是无理数的是？', options: ['A. 3.14', 'B. π', 'C. 22/7', 'D. 0.333...'], answer: 'B', analysis: 'π是无理数。' },
+            { id: 'ma_011', subject: '数学', topic: '实数', question: '实数包括？', options: ['A. 有理数', 'B. 无理数', 'C. 有理数和无理数', 'D. 整数和分数'], answer: 'C', analysis: '实数包括有理数和无理数。' },
+            { id: 'ma_012', subject: '数学', topic: '数轴', question: '数轴上的点与实数的关系是？', options: ['A. 一一对应', 'B. 多一对应', 'C. 一对多对应', 'D. 无对应关系'], answer: 'A', analysis: '一一对应。' },
+            { id: 'ma_013', subject: '数学', topic: '绝对值', question: '|−5| 的值是？', options: ['A. -5', 'B. 5', 'C. 0', 'D. 1/5'], answer: 'B', analysis: '负数的绝对值是它的相反数。' },
+            { id: 'ma_014', subject: '数学', topic: '估算', question: '√10 的值在下列哪两个整数之间？', options: ['A. 2 和 3', 'B. 3 和 4', 'C. 4 和 5', 'D. 5 和 6'], answer: 'B', analysis: '3²=9，4²=16，所以 3<√10<4。' },
+            { id: 'ma_015', subject: '数学', topic: '实数运算', question: '计算：√9 + √16 = ?', options: ['A. 5', 'B. 7', 'C. 25', 'D. 13'], answer: 'B', analysis: '3 + 4 = 7。' },
+            { id: 'ma_016', subject: '数学', topic: '坐标', question: '有序数对 (3, 4) 中，3 表示？', options: ['A. 横坐标', 'B. 纵坐标', 'C. 原点', 'D. 象限'], answer: 'A', analysis: '第一个数是横坐标。' },
+            { id: 'ma_017', subject: '数学', topic: '象限', question: '点 (2, -3) 在第几象限？', options: ['A. 第一象限', 'B. 第二象限', 'C. 第三象限', 'D. 第四象限'], answer: 'D', analysis: '第四象限 (+,-)。' },
+            { id: 'ma_018', subject: '数学', topic: '坐标轴', question: 'x 轴上的点的纵坐标是？', options: ['A. 0', 'B. 1', 'C. -1', 'D. 任意数'], answer: 'A', analysis: 'x 轴上的点纵坐标为 0。' },
+            { id: 'ma_019', subject: '数学', topic: '对称', question: '点 (3, 4) 关于 x 轴对称的点是？', options: ['A. (-3, 4)', 'B. (3, -4)', 'C. (-3, -4)', 'D. (4, 3)'], answer: 'B', analysis: '横坐标不变，纵坐标变相反数。' },
+            { id: 'ma_020', subject: '数学', topic: '平移', question: '点 (2, 3) 向右平移 3 个单位后的坐标是？', options: ['A. (5, 3)', 'B. (-1, 3)', 'C. (2, 6)', 'D. (2, 0)'], answer: 'A', analysis: '(2+3, 3) = (5, 3)。' },
+            // 数学 21-150 题（简化示例）
+            ...Array.from({ length: 130 }, (_, i) => ({
+                id: `ma_${String(i + 21).padStart(3, '0')}`,
+                subject: '数学',
+                topic: '七年级下册',
+                question: `数学题目 ${i + 21}：计算下列各式的结果？`,
+                options: [`A. ${i + 21}`, `B. ${i + 22}`, `C. ${i + 23}`, `D. ${i + 24}`],
+                answer: 'A',
+                analysis: `这是数学题目${i + 21}的解析。`
+            }))
+        ];
+
+        // 状态管理
+        let currentGrade = '7';
+        let currentSemester = '2';
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let shuffledQuestions = [];
+        let wrongAnswers = JSON.parse(localStorage.getItem('wrongAnswers')) || [];
+        let bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
+        let history = JSON.parse(localStorage.getItem('history')) || [];
+        let usedQuestions = JSON.parse(localStorage.getItem('usedQuestions')) || [];
+        let currentWrongQuestions = [];
+
+        // 智能抽题（5 天内不重复）
+        function getSmartRandomQuestions(totalQuestions, selectCount) {
+            const fiveDaysAgo = Date.now() - (5 * 24 * 60 * 60 * 1000);
+            
+            // 过滤出 5 天内未使用的题目
+            const availableQuestions = totalQuestions.filter(q => {
+                const usedRecord = usedQuestions.find(u => u.id === q.id);
+                if (!usedRecord) return true;
+                return usedRecord.lastUsed < fiveDaysAgo;
+            });
+            
+            // 如果可用题目不足，使用所有题目
+            const pool = availableQuestions.length >= selectCount ? availableQuestions : totalQuestions;
+            
+            // 随机选择
+            const shuffled = [...pool].sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, selectCount);
+        }
+
+        // 记录题目使用
+        function recordQuestionUsage(questionIds) {
+            const now = Date.now();
+            questionIds.forEach(id => {
+                const existing = usedQuestions.find(u => u.id === id);
+                if (existing) {
+                    existing.lastUsed = now;
+                    existing.count = (existing.count || 0) + 1;
+                } else {
+                    usedQuestions.push({ id, lastUsed: now, count: 1 });
+                }
+            });
+            localStorage.setItem('usedQuestions', JSON.stringify(usedQuestions));
+            updateStartButton();
+        }
+
+        // 更新按钮状态
+        function updateStartButton() {
+            const btn = document.getElementById('start-btn');
+            const fiveDaysAgo = Date.now() - (5 * 24 * 60 * 60 * 1000);
+            const availableCount = questions.filter(q => {
+                const used = usedQuestions.find(u => u.id === q.id);
+                return !used || used.lastUsed < fiveDaysAgo;
+            }).length;
+            
+            if (availableCount < 25) {
+                btn.disabled = true;
+                btn.innerText = `⚠️ 可用题目不足（剩余${availableCount}题）`;
+            } else {
+                btn.disabled = false;
+                btn.innerText = `🚀 开始每日打卡（25 题）`;
+            }
+        }
+
+        // 页面切换
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            if (page === 'home') {
+                document.getElementById('home-page').classList.remove('hidden');
+                document.querySelectorAll('.nav-btn')[0].classList.add('active');
+                updateStartButton();
+            } else if (page === 'answer') {
+                document.getElementById('answer-page').classList.remove('hidden');
+            } else if (page === 'result') {
+                document.getElementById('result-page').classList.remove('hidden');
+            } else if (page === 'wrong') {
+                document.getElementById('wrong-page').classList.remove('hidden');
+                document.querySelectorAll('.nav-btn')[1].classList.add('active');
+                renderWrongList();
+            } else if (page === 'history') {
+                document.getElementById('history-page').classList.remove('hidden');
+                document.querySelectorAll('.nav-btn')[2].classList.add('active');
+                renderHistoryList();
+            } else if (page === 'bookmark') {
+                document.getElementById('bookmark-page').classList.remove('hidden');
+                document.querySelectorAll('.nav-btn')[3].classList.add('active');
+                renderBookmarkList();
+            }
+        }
+
+        // 选择年级学期
+        function selectGrade(grade, element) {
+            currentGrade = grade;
+            document.querySelectorAll('#home-page .selection-card').forEach(el => {
+                if (el.innerText.includes('年级')) el.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+        function selectSemester(semester, element) {
+            currentSemester = semester;
+            document.querySelectorAll('#home-page .selection-card').forEach(el => {
+                if (el.innerText.includes('学期')) el.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+        // 开始答题
+        function startCheckin() {
+            shuffledQuestions = getSmartRandomQuestions(questions, 25);
+            currentQuestionIndex = 0;
+            score = 0;
+            currentWrongQuestions = [];
+            showPage('answer');
+            showQuestion();
+        }
+
+        // 显示题目
+        function showQuestion() {
+            const question = shuffledQuestions[currentQuestionIndex];
+            const container = document.getElementById('question-container');
+            
+            document.getElementById('progress-text').innerText = `第 ${currentQuestionIndex + 1} / ${shuffledQuestions.length} 题`;
+            document.getElementById('score-text').innerText = `得分：${score}`;
+            document.getElementById('progress-fill').style.width = `${((currentQuestionIndex + 1) / shuffledQuestions.length) * 100}%`;
+            
+            const isBookmarked = bookmarks.some(b => b.id === question.id);
+            
+            container.innerHTML = `
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-subject">${question.subject}</span>
+                        <span class="question-topic">📌 ${question.topic}</span>
+                    </div>
+                    <div class="question-text">${question.question}</div>
+                    <div>
+                        ${question.options.map((option, index) => `
+                            <div class="option" onclick="selectAnswer(this, '${option[0]}', '${question.answer}')">
+                                <span class="option-letter">${String.fromCharCode(65 + index)}</span>
+                                <span>${option.substring(3)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn ${isBookmarked ? 'bookmarked' : ''}" onclick="toggleBookmark('${question.id}')">
+                            ${isBookmarked ? '⭐' : '☆'} 收藏
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 选择答案
+        function selectAnswer(element, selected, correct) {
+            if (element.parentElement.classList.contains('answered')) return;
+            element.parentElement.classList.add('answered');
+            
+            const isCorrect = selected === correct;
+            const question = shuffledQuestions[currentQuestionIndex];
+            
+            if (isCorrect) {
+                element.classList.add('correct');
+                score++;
+            } else {
+                element.classList.add('wrong');
+                currentWrongQuestions.push(question);
+                if (!wrongAnswers.some(w => w.id === question.id)) {
+                    wrongAnswers.push(question);
+                    localStorage.setItem('wrongAnswers', JSON.stringify(wrongAnswers));
+                }
+                const options = element.parentElement.querySelectorAll('.option');
+                options.forEach(opt => {
+                    if (opt.innerText.startsWith(correct)) {
+                        opt.classList.add('correct');
+                    }
+                });
+            }
+            
+            const analysisDiv = document.createElement('div');
+            analysisDiv.className = `analysis ${isCorrect ? '' : 'wrong'}`;
+            analysisDiv.innerHTML = `
+                <strong>${isCorrect ? '✅ 回答正确！' : '❌ 回答错误'}</strong><br>
+                正确答案：<span class="badge ${isCorrect ? 'badge-success' : 'badge-error'}">${correct}</span><br><br>
+                📖 ${question.analysis}
+            `;
+            document.querySelector('.question-card').appendChild(analysisDiv);
+            
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < shuffledQuestions.length) {
+                    showQuestion();
+                } else {
+                    recordQuestionUsage(shuffledQuestions.map(q => q.id));
+                    history.unshift({
+                        date: new Date().toISOString(),
+                        score: isCorrect ? score + 1 : score,
+                        total: shuffledQuestions.length,
+                        percentage: Math.round(((isCorrect ? score + 1 : score) / shuffledQuestions.length) * 100),
+                        questionIds: shuffledQuestions.map(q => q.id)
+                    });
+                    localStorage.setItem('history', JSON.stringify(history));
+                    showResult();
+                }
+            }, 2000);
+        }
+
+        // 显示结果
+        function showResult() {
+            showPage('result');
+            const percentage = Math.round((score / shuffledQuestions.length) * 100);
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-percentage').innerText = percentage + '%';
+            document.getElementById('total-questions').innerText = shuffledQuestions.length;
+        }
+
+        // 复习错题
+        function reviewWrongAnswers() {
+            if (currentWrongQuestions.length === 0) {
+                alert('本次没有错题，太棒了！🎉');
+                return;
+            }
+            shuffledQuestions = [...currentWrongQuestions];
+            currentQuestionIndex = 0;
+            score = 0;
+            showPage('answer');
+            showQuestion();
+        }
+
+        // 收藏题目
+        function toggleBookmark(questionId) {
+            const index = bookmarks.findIndex(b => b.id === questionId);
+            const question = questions.find(q => q.id === questionId);
+            if (index === -1) {
+                bookmarks.push(question);
+            } else {
+                bookmarks.splice(index, 1);
+            }
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+            showQuestion();
+        }
+
+        // 渲染错题列表
+        function renderWrongList() {
+            const container = document.getElementById('wrong-list');
+            if (wrongAnswers.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">暂无错题，继续加油！💪</p>';
+                return;
+            }
+            container.innerHTML = wrongAnswers.map((q, i) => `
+                <div class="list-item" onclick="reviewQuestion(${i})">
+                    <div class="list-item-info">
+                        <div class="list-item-subject"><span class="badge badge-warning">${q.subject}</span> ${q.topic}</div>
+                        <div class="list-item-question">${q.question}</div>
+                    </div>
+                    <div class="list-item-action">
+                        <button class="action-btn" onclick="event.stopPropagation(); removeWrong(${i})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 渲染历史记录
+        function renderHistoryList() {
+            const container = document.getElementById('history-list');
+            if (history.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">暂无打卡记录</p>';
+                return;
+            }
+            container.innerHTML = history.map((h, i) => `
+                <div class="list-item">
+                    <div class="list-item-info">
+                        <div class="list-item-subject">
+                            <span class="badge ${h.percentage >= 80 ? 'badge-success' : h.percentage >= 60 ? 'badge-warning' : 'badge-error'}">
+                                ${h.percentage}%
+                            </span>
+                            <span class="badge badge-info" style="margin-left: 5px;">${h.total}题</span>
+                        </div>
+                        <div class="list-item-question">得分：${h.score}/${h.total}</div>
+                        <div class="list-item-date">${new Date(h.date).toLocaleString('zh-CN')}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 渲染收藏列表
+        function renderBookmarkList() {
+            const container = document.getElementById('bookmark-list');
+            if (bookmarks.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">暂无收藏题目</p>';
+                return;
+            }
+            container.innerHTML = bookmarks.map((q, i) => `
+                <div class="list-item">
+                    <div class="list-item-info">
+                        <div class="list-item-subject"><span class="badge badge-warning">${q.subject}</span> ${q.topic}</div>
+                        <div class="list-item-question">${q.question}</div>
+                    </div>
+                    <div class="list-item-action">
+                        <button class="action-btn" onclick="removeBookmark(${i})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 删除错题
+        function removeWrong(index) {
+            wrongAnswers.splice(index, 1);
+            localStorage.setItem('wrongAnswers', JSON.stringify(wrongAnswers));
+            renderWrongList();
+        }
+
+        // 删除收藏
+        function removeBookmark(index) {
+            bookmarks.splice(index, 1);
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+            renderBookmarkList();
+        }
+
+        // 复习单题
+        function reviewQuestion(index) {
+            shuffledQuestions = [wrongAnswers[index]];
+            currentQuestionIndex = 0;
+            score = 0;
+            showPage('answer');
+            showQuestion();
+        }
+
+        // 初始化
+        showPage('home');
+    </script>
+</body>
+</html>
